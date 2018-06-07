@@ -1,0 +1,16 @@
+IT Company - Report 
+
+IT Company is actually composed of 2 project Teams and 4 Programmers.
+This month, 64 days have been consumed by 4 programmers, and 0 days still in charge.
+
+
+Project team: Half-Pay
+
+Weber, Chase, in charge of 'Java-01' from 2018-05-05 to 2018-05-10 (duration 5 days), this month : 5 days (total cost = $37.500)
+Doe, Jane, in charge of 'Java-07' from 2018-04-15 to 2018-08-15 (duration 122 days), this month : 30 days (total cost = $262.500)
+
+Project team: Full-Pay
+
+Weber, Gimli, in charge of 'Java-02' from 2018-05-04 to 2018-05-09 (duration 5 days), this month : 5 days (total cost = $70.000)
+Smith, John, in charge of 'Java-22' from 2018-05-01 to 2018-05-25 (duration 24 days), this month : 24 days (total cost = $480.000)
+

@@ -1,0 +1,163 @@
+package managementIT;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Iterator;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class ITCompany {
+
+	public static void main(String[] args) {
+		
+		ProjectTeam team50 = new ProjectTeam("Half-Pay", 0.50);
+		ProjectTeam team100 = new ProjectTeam("Full-Pay", 1.00);
+		
+		
+		ProgrammerInCharge programmer1 = new ProgrammerInCharge(1, "Chase", "Weber", new BigDecimal("15.00"), "Java-01",LocalDate.parse("2018-05-05"),LocalDate.parse("2018-05-10"));
+		ProgrammerInCharge programmer2 = new ProgrammerInCharge(2, "Gimli", "Weber", new BigDecimal("14.00"), "Java-02",LocalDate.parse("2018-05-04"),LocalDate.parse("2018-05-09"));
+		ProgrammerInCharge programmer3 = new ProgrammerInCharge(3, "John", "Smith", new BigDecimal("20.00"), "Java-22",LocalDate.parse("2018-05-01"),LocalDate.parse("2018-05-25"));
+		ProgrammerInCharge programmer4 = new ProgrammerInCharge(4, "Jane", "Doe", new BigDecimal("17.50"), "Java-07",LocalDate.parse("2018-04-15"),LocalDate.parse("2018-08-15"));			
+		
+		team50.addProgrammer(programmer1);
+		team50.addProgrammer(programmer2);
+		team100.addProgrammer(programmer3);
+		team100.addProgrammer(programmer4);
+		
+		save();
+		load();
+	}
+		
+		
+		
+		/*
+		
+		JSONParser jsonParser = new JSONParser();
+		
+		try (FileReader reader = new FileReader("runtimeDocs/programmerSingle.json")) {
+			// Read JSON file
+			Object obj = jsonParser.parse(reader);
+			
+			JSONArray employeeList = (JSONArray) obj;
+			System.out.println(employeeList);
+			
+			//Iterate over employee array
+			employeeList.forEach( emp -> parseEmployeeObject( (JSONObject) emp ));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+		
+	private static void parseEmployeeObject(JSONObject employee) {
+		JSONObject employeeObject = (JSONObject) employee.get("programmerInCharge");
+		
+		long programmerID = (long) employeeObject.get("programmerID");
+		String lastName = (String) employeeObject.get("lastName");
+		String firstName = (String) employeeObject.get("firstName");
+		BigDecimal dailyRate = new BigDecimal( (String) employeeObject.get("dailyRate"));
+		String task = (String) employeeObject.get("task");
+		String taskStartDateString = (String) employeeObject.get("taskStartDate");
+		
+		LocalDate taskStartDate;
+		try {
+			taskStartDate = LocalDate.parse( (String) employeeObject.get("taskStartDate") );
+		} catch(NullPointerException e) {
+			taskStartDate = null;
+		}
+		LocalDate taskEndDate;
+		try {
+			taskEndDate = LocalDate.parse( (String) employeeObject.get("taskEndDate") );
+		} catch(NullPointerException e) {
+			taskEndDate = null;
+		}
+
+		ProgrammerInCharge user1Remade = new ProgrammerInCharge(programmerID, lastName, firstName, dailyRate, task, taskStartDate, taskEndDate);
+		System.out.println(user1Remade.getProgrammerID());
+		System.out.println(user1Remade.getLastName());
+		System.out.println(user1Remade.getFirstName());
+		System.out.println(user1Remade.getDailyRate());
+		System.out.println(user1Remade.getTask());
+		System.out.println(user1Remade.getTaskStartDate());
+		System.out.println(user1Remade.getTaskEndDate());
+		
+		
+	}
+		*/
+	
+	public static void switchTeams(ProjectTeam teamFrom, ProjectTeam teamTo, ProgrammerInCharge programmer) {
+		if (teamFrom.getProgrammers().contains(programmer)) {
+			teamTo.addProgrammer(programmer);
+			teamFrom.removeProgrammer(programmer);
+		} else {
+			System.out.println("Programmer 'ID: " + programmer.getProgrammerID() + "  Name: " + programmer.getLastName() + ", " + programmer.getFirstName() + 
+							  "' Does not exist in Team 'ID: " + teamFrom.getTeamID() + " Name: " + teamFrom.getTeamName() + "'.");
+		}
+		
+		teamTo.addProgrammer(programmer);
+		teamFrom.removeProgrammer(programmer);
+	}
+	
+	public void load() {
+		JSONParser parser = new JSONParser();
+		
+		try {
+			
+			
+			JSONObject jsonLoad = (JSONObject) parser.parse(new FileReader("runtimeDocs/programmerSingle.json"));
+			System.out.println(jsonLoad);
+			
+			JSONArray programmers = (JSONArray) jsonLoad.get("ProgrammerInCharge");
+			Iterator<String> iterator = programmers.iterator();
+			while (iterator.hasNext()) {
+				System.out.println(iterator.next());
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void create() {
+
+	}
+	
+	public void update() {
+		
+	}
+	
+	@SuppressWarnings("unchecked")	
+	public static void save() {
+		JSONArray jsonArray = new JSONArray();
+		for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+			jsonArray.add(programmer.toJSON());
+		}
+		for (ProjectTeam team : ProjectTeam.getTeamList()) {
+			jsonArray.add(team.toJSON());
+		}		
+		try (FileWriter file = new FileWriter("runtimeDocs/programmerSingle.json")) {
+			file.write(jsonArray.toJSONString());
+			file.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void report() {
+		
+	}
+
+}

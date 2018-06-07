@@ -1,0 +1,103 @@
+package managementIT;
+
+import java.time.LocalDate;
+import java.time.Duration;
+import java.time.temporal.TemporalAdjusters;
+
+
+public class ProgrammerInCharge implements Employee {
+	private String lastName, firstName;
+	private long programmerID;	
+	private static long programmerIDSetter;
+	private String task;
+	private LocalDate taskStartDate, taskEndDate;
+	
+	// TODO This is temporary for now, this should check saved file to determine what programmerID to start creating new programmers.
+	programmerID = 1;
+	
+	
+	public ProgrammerInCharge(String lastNameInput, String firstNameInput) {
+		this(lastNameInput, firstNameInput, programmerIDSetter, "", null, null);
+	}
+	
+	public ProgrammerInCharge(String lastNameInput, String firstNameInput, long inputID, String taskInput, LocalDate taskStartDateInput, LocalDate taskEndDateInput) {
+		lastName = lastNameInput;
+		firstName = firstNameInput;
+		programmerID = inputID;
+		task = taskInput;
+		taskStartDate = taskStartDateInput;
+		taskEndDate = taskEndDateInput;
+		programmerIDSetter++;
+	}
+	
+	// Getters and Setters
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+		//Do not allow changing of ProgrammerID, once created it never changes.
+	public int getProgrammerID() {
+		return programmerID;
+	}
+	public String getTask() {
+		return task;
+	}
+	public void setTask(String task) {
+		this.task = task;
+	}
+	public LocalDate getTaskStartDate() {
+		return taskStartDate;
+	}
+	public void setTaskStartDate(LocalDate taskStartDate) {
+		this.taskStartDate = taskStartDate;
+	}
+	public LocalDate getTaskEndDate() {
+		return taskEndDate;
+	}
+	public void setTaskEndDate(LocalDate taskEndDate) {
+		this.taskEndDate = taskEndDate;
+	}
+	
+	// Other Methods
+	public int taskDays() {
+		Duration duration = Duration.between(taskStartDate, taskEndDate);
+		long dayCount = duration.toDays();		
+		return (int) dayCount;
+	}
+	public int taskMonthDays() {		
+		if (LocalDate.now().isBefore(taskStartDate) || LocalDate.now().isAfter(taskEndDate.with(TemporalAdjusters.lastDayOfMonth()) )) {
+			return 0;
+		}
+		
+		LocalDate compareStart;
+		LocalDate compareEnd;	
+		if (LocalDate.now().withDayOfMonth(1).isAfter(taskStartDate)) {
+			compareStart = LocalDate.now().withDayOfMonth(1);
+		} else {
+			compareStart = taskStartDate;
+		}
+		if (LocalDate.now().isBefore(taskEndDate)) {
+			compareEnd = LocalDate.now();
+		} else {
+			compareEnd = taskEndDate;
+		}
+		
+		Duration duration = Duration.between(compareStart, compareEnd);
+		long dayCount = duration.toDays();
+		return (int) dayCount;
+	}
+	public void taskAddDays(int addDays) {
+		taskEndDate = taskEndDate.plusDays(addDays);
+	}
+	public void taskSubtractDays(int subDays) {
+		taskEndDate = taskEndDate.minusDays(subDays);
+	}
+}

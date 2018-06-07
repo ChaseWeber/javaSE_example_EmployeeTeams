@@ -1,0 +1,12 @@
+package managementIT;
+
+import java.time.LocalDate;
+
+public interface Employee {
+	
+	int taskDays();
+	int taskMonthDays();
+	LocalDate taskAddDays();
+	LocalDate taskSubtractDays();
+
+}

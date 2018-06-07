@@ -1,0 +1,42 @@
+package managementIT;
+
+import java.util.ArrayList;
+
+public class ProjectTeam {
+	private long teamID;
+	private static long teamIDSetter;
+	private String teamName;
+	private float payPercent;
+	private ArrayList<ProgrammerInCharge> programmers;
+	
+	public ProjectTeam(String teamNameInput, float payPercentInput) {
+		teamIDSetter++;
+		teamID = teamIDSetter;		
+		teamName = teamNameInput;
+		payPercent = payPercentInput;
+	}
+	
+	public long getTeamID() {
+		return teamID;
+	}
+	public void setTeamID(int teamID) {
+		this.teamID = teamID;
+	}
+	public float getPayPercent() {
+		return payPercent;
+	}
+	public void setPayPercent(float payPercent) {
+		this.payPercent = payPercent;
+	}
+	public void addProgrammer(ProgrammerInCharge programmer) {
+		boolean changed;
+		changed = programmers.add(programmer);
+		System.out.println("ProjectTeam - addProgrammer - " + changed);
+	}
+	public void removeProgrammer(ProgrammerInCharge programmer) {
+		boolean changed;
+		changed = programmers.remove(programmer);
+		System.out.println("ProjectTeam - removeProgrammer - " + changed);
+	}
+	
+}

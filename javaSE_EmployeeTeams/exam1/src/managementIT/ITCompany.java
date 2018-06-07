@@ -1,0 +1,235 @@
+package managementIT;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Iterator;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class ITCompany {
+
+	public static void main(String[] args) {
+		
+		//load();
+		
+		ProjectTeam team50 = new ProjectTeam(1,"Half-Pay", 0.50);
+		ProjectTeam team100 = new ProjectTeam(2,"Full-Pay", 1.00);
+		
+		
+		ProgrammerInCharge programmer1 = new ProgrammerInCharge(1, "Weber", "Chase", new BigDecimal("15.00"), "Java-01",LocalDate.parse("2018-05-05"),LocalDate.parse("2018-05-10"));
+		ProgrammerInCharge programmer2 = new ProgrammerInCharge(2, "Weber", "Gimli", new BigDecimal("14.00"), "Java-02",LocalDate.parse("2018-05-04"),LocalDate.parse("2018-05-09"));
+		ProgrammerInCharge programmer3 = new ProgrammerInCharge(3, "Smith", "John", new BigDecimal("20.00"), "Java-22",LocalDate.parse("2018-05-01"),LocalDate.parse("2018-05-25"));
+		ProgrammerInCharge programmer4 = new ProgrammerInCharge(4, "Doe", "Jane", new BigDecimal("17.50"), "Java-07",LocalDate.parse("2018-04-15"),LocalDate.parse("2018-08-15"));			
+		
+		team50.addProgrammer(programmer1);
+		team50.addProgrammer(programmer4);
+		team100.addProgrammer(programmer2);
+		team100.addProgrammer(programmer3);
+		
+		save();
+		report();
+	}
+		
+	
+	public static void switchTeams(ProjectTeam teamFrom, ProjectTeam teamTo, ProgrammerInCharge programmer) {
+		if (teamFrom.getProgrammers().contains(programmer)) {
+			teamTo.addProgrammer(programmer);
+			teamFrom.removeProgrammer(programmer);
+		} else {
+			System.out.println("Programmer 'ID: " + programmer.getProgrammerID() + "  Name: " + programmer.getLastName() + ", " + programmer.getFirstName() + 
+							  "' Does not exist in Team 'ID: " + teamFrom.getTeamID() + " Name: " + teamFrom.getTeamName() + "'.");
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void load() {
+		createFolder();
+		
+		JSONParser jsonParser = new JSONParser();
+		
+		try (FileReader reader = new FileReader("runtimeDocs/programmerSingle.json")) {
+			Object obj = jsonParser.parse(reader);
+			
+			JSONArray programmerData = (JSONArray) obj;
+			System.out.println(programmerData);
+			
+			programmerData.forEach( dataSection -> parseDataObject( (JSONObject) dataSection ));
+		} catch (FileNotFoundException e) {
+			try {
+				FileWriter file = new FileWriter("runtimeDocs/programmerSingle.json");
+				file.close();
+			} catch (IOException ee) {
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	
+	}
+	private static void parseDataObject(JSONObject dataSection) {
+		// Manage programmerInCharge
+		JSONObject dataJSON = (JSONObject) dataSection.get("programmerInCharge");
+		if (dataJSON != null) {
+			// Gather each section of the programmerInCharge to recreate object. (Storage held in ProgrammerInCharge.programmerList.
+			long programmerID = (long) dataJSON.get("programmerID");
+			String lastName = (String) dataJSON.get("lastName");
+			String firstName = (String) dataJSON.get("firstName");
+			BigDecimal dailyRate = new BigDecimal( (String) dataJSON.get("dailyRate"));
+			String task = (String) dataJSON.get("task");
+			
+			String taskStartDateString = (String) dataJSON.get("taskStartDate");
+			LocalDate taskStartDate = (taskStartDateString != null) ? LocalDate.parse(taskStartDateString) : null;
+			
+			String taskEndDateString = (String) dataJSON.get("taskEndDate");
+			LocalDate taskEndDate = (taskEndDateString != null) ? LocalDate.parse(taskEndDateString) : null;
+
+			new ProgrammerInCharge(programmerID, lastName, firstName, dailyRate, task, taskStartDate, taskEndDate);
+		}
+		
+		// Manage projectTeam (including adding programmers to team.
+		dataJSON = (JSONObject) dataSection.get("projectTeam");
+		if (dataJSON != null) {
+			long teamID = (long) dataJSON.get("teamID");
+			String teamName = (String) dataJSON.get("teamName");
+			double payPercent = (double) dataJSON.get("payPercent");
+			
+			ProjectTeam team = new ProjectTeam(teamID, teamName, payPercent);
+			
+			JSONArray programmerIDsJSON = (JSONArray) dataJSON.get("programmerIDs");
+			Iterator<?> i = programmerIDsJSON.iterator();
+			
+			System.out.println(programmerIDsJSON);
+			while (i.hasNext()) {
+				long id = (long) i.next();
+				for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+					if (programmer.getProgrammerID() == id) {
+						team.addProgrammer(programmer);
+					} 
+				}
+			}
+			//System.out.println( (String) dataJSON.get("programmerIDs"));
+		}
+		
+	}
+	
+	public void update() {
+		for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+			LocalDate endDate = programmer.getTaskEndDate();
+			endDate.plusDays(1);
+			programmer.setTaskEndDate(endDate);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")	
+	public static void save() {
+		createFolder();
+		JSONArray jsonArray = new JSONArray();
+		for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+			jsonArray.add(programmer.toJSON());
+		}
+		for (ProjectTeam team : ProjectTeam.getTeamList()) {
+			jsonArray.add(team.toJSON());
+		}		
+		try (FileWriter file = new FileWriter("runtimeDocs/programmerSingle.json")) {
+			file.write(jsonArray.toJSONString());
+			file.flush();
+			file.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void report() {
+		createFolder();
+		try (FileWriter file = new FileWriter("runtimeDocs/report.txt")) {
+			StringBuilder printout = new StringBuilder();
+			long[] dayData = new long[3];
+			dayData = reportDayData();
+			// Header:
+			printout.append("IT Company - Report \r\n\r\n");
+			printout.append("IT Company is actually composed of ");
+			printout.append(ProjectTeam.getTeamList().size());
+			printout.append(" project Teams and ");
+			printout.append(ProgrammerInCharge.getProgrammerList().size());
+			printout.append(" Programmers.\r\n");
+			printout.append("This month, ");
+			printout.append(dayData[0]);
+			printout.append(" days have been consumed by ");
+			printout.append(dayData[1]);
+			printout.append(" programmers, and ");
+			printout.append(dayData[2]);
+			printout.append(" days still in charge.\r\n\r\n\r\n");
+			// Teams:
+			for (ProjectTeam team : ProjectTeam.getTeamList()) {
+				printout.append("Project team: ");
+				printout.append(team.getTeamName());
+				printout.append("\r\n\r\n");
+				for (ProgrammerInCharge programmer : team.getProgrammers()) {
+					printout.append(programmer.getLastName());
+					printout.append(", ");
+					printout.append(programmer.getFirstName());
+					printout.append(", in charge of '");
+					printout.append(programmer.getTask());
+					printout.append("' from ");
+					printout.append(programmer.getTaskStartDate().toString());
+					printout.append(" to ");
+					printout.append(programmer.getTaskEndDate().toString());
+					printout.append(" (duration ");
+					printout.append(programmer.taskDays());
+					printout.append(" days), this month : ");
+					printout.append(programmer.taskMonthDays());
+					printout.append(" days (total cost = $");
+					printout.append(programmer.getDailyRate().multiply(BigDecimal.valueOf(programmer.taskMonthDays())).multiply(BigDecimal.valueOf(team.getPayPercent())));
+					printout.append(")\r\n");
+				}
+				printout.append("\r\n");
+			}
+			System.out.print(printout.toString());
+			file.write(printout.toString());
+			file.flush();
+			file.close();			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private static long[] reportDayData() {
+		long[] returnData = new long[3];
+		
+		// Teams:
+		for (ProjectTeam team : ProjectTeam.getTeamList()) {
+			for (ProgrammerInCharge programmer : team.getProgrammers()) {
+				returnData[0] += programmer.taskMonthDays();
+				if (programmer.taskMonthDays() > 0) {
+					returnData[1] += 1;
+				}
+				returnData[2] += programmer.taskMonthDaysLeft();
+			}
+		}
+		
+		return returnData;
+	}
+	private static void createFolder() {
+		Path path = Paths.get("runtimeDocs");
+		if (!Files.exists(path)) {
+			try {
+				Files.createDirectory(path);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+
+}

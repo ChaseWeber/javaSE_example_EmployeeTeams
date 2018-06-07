@@ -1,0 +1,5 @@
+package managementIT;
+
+public abstract class abstractor {
+
+}

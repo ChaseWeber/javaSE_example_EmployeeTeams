@@ -1,0 +1,148 @@
+package managementIT;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Iterator;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class ITCompany {
+
+	public static void main(String[] args) {
+		
+		ProjectTeam team50 = new ProjectTeam(1,"Half-Pay", 0.50);
+		ProjectTeam team100 = new ProjectTeam(2,"Full-Pay", 1.00);
+		
+		
+		ProgrammerInCharge programmer1 = new ProgrammerInCharge(1, "Weber", "Chase", new BigDecimal("15.00"), "Java-01",LocalDate.parse("2018-05-05"),LocalDate.parse("2018-05-10"));
+		ProgrammerInCharge programmer2 = new ProgrammerInCharge(2, "Weber", "Gimli", new BigDecimal("14.00"), "Java-02",LocalDate.parse("2018-05-04"),LocalDate.parse("2018-05-09"));
+		ProgrammerInCharge programmer3 = new ProgrammerInCharge(3, "Smith", "John", new BigDecimal("20.00"), "Java-22",LocalDate.parse("2018-05-01"),LocalDate.parse("2018-05-25"));
+		ProgrammerInCharge programmer4 = new ProgrammerInCharge(4, "Doe", "Jane", new BigDecimal("17.50"), "Java-07",LocalDate.parse("2018-04-15"),LocalDate.parse("2018-08-15"));			
+		ProgrammerInCharge programmer5 = new ProgrammerInCharge(5, "Noa", "Usir", new BigDecimal("17.50"));
+		
+		team50.addProgrammer(programmer1);
+		team50.addProgrammer(programmer4);
+		team100.addProgrammer(programmer2);
+		team100.addProgrammer(programmer3);
+		
+		save();
+		/*load();
+		switchTeams(ProjectTeam.getTeamList().get(0), ProjectTeam.getTeamList().get(1),ProjectTeam.getTeamList().get(0).getProgrammers().get(0));
+		save();*/
+	}
+		
+	
+	public static void switchTeams(ProjectTeam teamFrom, ProjectTeam teamTo, ProgrammerInCharge programmer) {
+		if (teamFrom.getProgrammers().contains(programmer)) {
+			teamTo.addProgrammer(programmer);
+			teamFrom.removeProgrammer(programmer);
+		} else {
+			System.out.println("Programmer 'ID: " + programmer.getProgrammerID() + "  Name: " + programmer.getLastName() + ", " + programmer.getFirstName() + 
+							  "' Does not exist in Team 'ID: " + teamFrom.getTeamID() + " Name: " + teamFrom.getTeamName() + "'.");
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void load() {
+		JSONParser jsonParser = new JSONParser();
+		
+		try (FileReader reader = new FileReader("runtimeDocs/programmerSingle.json")) {
+			Object obj = jsonParser.parse(reader);
+			
+			JSONArray programmerData = (JSONArray) obj;
+			System.out.println(programmerData);
+			
+			programmerData.forEach( dataSection -> parseDataObject( (JSONObject) dataSection ));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	
+	}
+	private static void parseDataObject(JSONObject dataSection) {
+		// Manage programmerInCharge
+		JSONObject dataJSON = (JSONObject) dataSection.get("programmerInCharge");
+		if (dataJSON != null) {
+			// Gather each section of the programmerInCharge to recreate object. (Storage held in ProgrammerInCharge.programmerList.
+			long programmerID = (long) dataJSON.get("programmerID");
+			String lastName = (String) dataJSON.get("lastName");
+			String firstName = (String) dataJSON.get("firstName");
+			BigDecimal dailyRate = new BigDecimal( (String) dataJSON.get("dailyRate"));
+			String task = (String) dataJSON.get("task");
+			
+			String taskStartDateString = (String) dataJSON.get("taskStartDate");
+			LocalDate taskStartDate = (taskStartDateString != null) ? LocalDate.parse(taskStartDateString) : null;
+			
+			String taskEndDateString = (String) dataJSON.get("taskEndDate");
+			LocalDate taskEndDate = (taskEndDateString != null) ? LocalDate.parse(taskEndDateString) : null;
+
+			new ProgrammerInCharge(programmerID, lastName, firstName, dailyRate, task, taskStartDate, taskEndDate);
+		}
+		
+		// Manage projectTeam (including adding programmers to team.
+		dataJSON = (JSONObject) dataSection.get("projectTeam");
+		if (dataJSON != null) {
+			long teamID = (long) dataJSON.get("teamID");
+			String teamName = (String) dataJSON.get("teamName");
+			double payPercent = (double) dataJSON.get("payPercent");
+			
+			ProjectTeam team = new ProjectTeam(teamID, teamName, payPercent);
+			
+			JSONArray programmerIDsJSON = (JSONArray) dataJSON.get("programmerIDs");
+			Iterator i = programmerIDsJSON.iterator();
+			
+			System.out.println(programmerIDsJSON);
+			while (i.hasNext()) {
+				long id = (long) i.next();
+				for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+					if (programmer.getProgrammerID() == id) {
+						team.addProgrammer(programmer);
+					} 
+				}
+			}
+			//System.out.println( (String) dataJSON.get("programmerIDs"));
+		}
+		
+	}
+	
+	
+	public void create() {
+
+	}
+	
+	public void update() {
+		
+	}
+	
+	@SuppressWarnings("unchecked")	
+	public static void save() {
+		JSONArray jsonArray = new JSONArray();
+		for (ProgrammerInCharge programmer : ProgrammerInCharge.getProgrammerList()) {
+			jsonArray.add(programmer.toJSON());
+		}
+		for (ProjectTeam team : ProjectTeam.getTeamList()) {
+			jsonArray.add(team.toJSON());
+		}		
+		try (FileWriter file = new FileWriter("runtimeDocs/programmerSingle.json")) {
+			file.write(jsonArray.toJSONString());
+			file.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void report() {
+		
+	}
+
+}

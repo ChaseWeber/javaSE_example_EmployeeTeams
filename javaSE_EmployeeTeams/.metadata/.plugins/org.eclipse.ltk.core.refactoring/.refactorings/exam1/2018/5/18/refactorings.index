@@ -1,0 +1,17 @@
+1525353572827	Delete element
+1525354808687	Delete element
+1525354854946	Rename package 'ITManagementCompany'
+1525354868417	Delete element
+1525354904310	Delete element
+1525354935391	Delete element
+1525355102552	Delete element
+1525355940652	Delete element
+1525357157422	Encapsulate field 'lastName'
+1525357209014	Encapsulate field 'firstName'
+1525357218308	Encapsulate field 'programmerID'
+1525357248770	Encapsulate field 'task'
+1525357269617	Encapsulate field 'taskStartDate'
+1525357274528	Encapsulate field 'taskEndDate'
+1525385718880	Encapsulate field 'teamID'
+1525385725502	Encapsulate field 'payPercent'
+1525462489752	Encapsulate field 'salery'

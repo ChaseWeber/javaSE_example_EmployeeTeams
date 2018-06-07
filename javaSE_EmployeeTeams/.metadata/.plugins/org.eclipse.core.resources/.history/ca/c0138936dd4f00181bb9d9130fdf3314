@@ -1,0 +1,123 @@
+package managementIT;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Duration;
+import java.time.temporal.TemporalAdjusters;
+
+
+public class ProgrammerInCharge implements Employee {
+	private String lastName, firstName;
+	private long programmerID;	
+	private static long programmerIDSetter;
+	private String task;
+	private LocalDate taskStartDate;
+	private LocalDate taskEndDate;
+	private BigDecimal dailyRate;
+		
+	public ProgrammerInCharge(String lastNameInput, String firstNameInput, BigDecimal dailyRateInput) {
+		this(programmerIDSetter, lastNameInput, firstNameInput, dailyRateInput, "", null, null);
+	}
+	public ProgrammerInCharge(String lastNameInput, String firstNameInput, BigDecimal dailyRateInput, String taskInput, LocalDate taskStartDateInput, LocalDate taskEndDateInput) {
+		this(programmerIDSetter, lastNameInput, firstNameInput, dailyRateInput, taskInput, taskStartDateInput, taskEndDateInput);
+	}
+	
+	public ProgrammerInCharge(long inputID, String lastNameInput, String firstNameInput, BigDecimal dailyRateInput, String taskInput, LocalDate taskStartDateInput, LocalDate taskEndDateInput) {
+		programmerIDSetter++;
+		lastName = lastNameInput;
+		firstName = firstNameInput;
+		programmerID = inputID;
+		task = taskInput;
+		taskStartDate = taskStartDateInput;
+		taskEndDate = taskEndDateInput;
+		dailyRate = dailyRateInput;
+	}
+	
+	// Getters and Setters
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+		//Do not allow changing of ProgrammerID, once created it never changes.
+	public long getProgrammerID() {
+		return programmerID;
+	}
+	public long getProgrammerIDSetter() {
+		return programmerIDSetter;
+	}
+	public String getTask() {
+		return task;
+	}
+	public void setTask(String task) {
+		this.task = task;
+	}
+	public LocalDate getTaskStartDate() {
+		return taskStartDate;
+	}
+	public void setTaskStartDate(LocalDate taskStartDate) {
+		this.taskStartDate = taskStartDate;
+	}
+	public LocalDate getTaskEndDate() {
+		return taskEndDate;
+	}
+	public void setTaskEndDate(LocalDate taskEndDate) {
+		this.taskEndDate = taskEndDate;
+	}
+	
+	public BigDecimal getDailyRate() {
+		return dailyRate;
+	}
+
+	public void setDailyRate(BigDecimal dailyRate) {
+		this.dailyRate = dailyRate;
+	}
+
+	// Other Methods
+	public int taskDays() {
+		Duration duration = Duration.between(taskStartDate, taskEndDate);
+		long dayCount = duration.toDays();		
+		return (int) dayCount;
+	}
+	public int taskMonthDays() {		
+		if (LocalDate.now().isBefore(taskStartDate) || LocalDate.now().isAfter(taskEndDate.with(TemporalAdjusters.lastDayOfMonth()) )) {
+			return 0;
+		}
+		
+		LocalDate compareStart;
+		LocalDate compareEnd;	
+		if (LocalDate.now().withDayOfMonth(1).isAfter(taskStartDate)) {
+			compareStart = LocalDate.now().withDayOfMonth(1);
+		} else {
+			compareStart = taskStartDate;
+		}
+		if (LocalDate.now().isBefore(taskEndDate)) {
+			compareEnd = LocalDate.now();
+		} else {
+			compareEnd = taskEndDate;
+		}
+		
+		Duration duration = Duration.between(compareStart, compareEnd);
+		long dayCount = duration.toDays();
+		return (int) dayCount;
+	}
+	public void taskAddDays(int addDays) {
+		taskEndDate = taskEndDate.plusDays(addDays);
+	}
+	public void taskSubtractDays(int subDays) {
+		taskEndDate = taskEndDate.minusDays(subDays);
+	}
+	public BigDecimal costTotal() {
+		return dailyRate.multiply(new BigDecimal(taskDays()));
+	}
+	public BigDecimal costMonth() {
+		return dailyRate.multiply(new BigDecimal(taskMonthDays()));
+	}
+}

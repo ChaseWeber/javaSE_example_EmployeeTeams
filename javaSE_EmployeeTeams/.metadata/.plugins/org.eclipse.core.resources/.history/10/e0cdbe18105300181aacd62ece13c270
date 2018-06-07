@@ -1,0 +1,173 @@
+package managementIT;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+
+import org.json.simple.JSONObject;
+
+
+public class ProgrammerInCharge implements Employee {
+	private String lastName, firstName;
+	private long programmerID;	
+	private String task;
+	private LocalDate taskStartDate;
+	private LocalDate taskEndDate;
+	private BigDecimal dailyRate;
+	private static ArrayList<ProgrammerInCharge> programmerList = new ArrayList<ProgrammerInCharge>();
+		
+	public ProgrammerInCharge(long programmerIDInput, String lastNameInput, String firstNameInput, BigDecimal dailyRateInput) {
+		this(programmerIDInput, lastNameInput, firstNameInput, dailyRateInput, "", null, null);
+	}
+	public ProgrammerInCharge(long programmerIDInput, String lastNameInput, String firstNameInput, BigDecimal dailyRateInput, String taskInput, LocalDate taskStartDateInput, LocalDate taskEndDateInput) {
+		programmerID = programmerIDInput;
+		lastName = lastNameInput;
+		firstName = firstNameInput;
+		task = taskInput;
+		taskStartDate = taskStartDateInput;
+		taskEndDate = taskEndDateInput;
+		dailyRate = dailyRateInput;
+		programmerList.add(this);
+	}
+	
+	// Getters and Setters
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+		//Do not allow changing of ProgrammerID, once created it never changes.
+	public long getProgrammerID() {
+		return programmerID;
+	}
+	public String getTask() {
+		return task;
+	}
+	public void setTask(String task) {
+		this.task = task;
+	}
+	public LocalDate getTaskStartDate() {
+		return taskStartDate;
+	}
+	public void setTaskStartDate(LocalDate taskStartDate) {
+		this.taskStartDate = taskStartDate;
+	}
+	public LocalDate getTaskEndDate() {
+		return taskEndDate;
+	}
+	public void setTaskEndDate(LocalDate taskEndDate) {
+		this.taskEndDate = taskEndDate;
+	}
+	
+	public BigDecimal getDailyRate() {
+		return dailyRate;
+	}
+
+	public void setDailyRate(BigDecimal dailyRate) {
+		this.dailyRate = dailyRate;
+	}
+	public static ArrayList<ProgrammerInCharge> getProgrammerList() {
+		return programmerList;
+	}
+
+	// Other Methods
+	public int taskDays() {
+		if(taskStartDate == null || taskEndDate == null) {
+			return 0;
+		}
+		
+		long dayCount = ChronoUnit.DAYS.between(taskStartDate, taskEndDate);
+		System.out.println(dayCount);
+		return (int) dayCount;
+	}
+	public int taskMonthDays() {		
+		if (taskStartDate == null || taskEndDate == null) {
+			return 0;
+		}
+		
+		if (LocalDate.now().isBefore(taskStartDate) || LocalDate.now().isAfter(taskEndDate.with(TemporalAdjusters.lastDayOfMonth()) )) {
+			return 0;
+		}
+		
+		LocalDate compareStart;
+		LocalDate compareEnd;	
+		if (LocalDate.now().withDayOfMonth(1).isAfter(taskStartDate)) {
+			compareStart = LocalDate.now().withDayOfMonth(1);
+		} else {
+			compareStart = taskStartDate;
+		}
+		if (LocalDate.now().isBefore(taskEndDate)) {
+			compareEnd = LocalDate.now();
+		} else {
+			compareEnd = taskEndDate;
+		}
+		//System.out.println("		Start: " + compareStart + "	End: " + compareEnd);
+		
+		Period period = Period.between(compareStart, compareEnd);
+		long dayCount = period.getDays();
+		return (int) dayCount;
+	}
+	public void taskAddDays(int addDays) {
+		if (taskEndDate == null) {
+			return;
+		}
+		taskEndDate = taskEndDate.plusDays(addDays);
+	}
+	public void taskSubtractDays(int subDays) {
+		if (taskEndDate == null) {
+			return;
+		}
+		taskEndDate = taskEndDate.minusDays(subDays);
+	}
+	public BigDecimal costTotal() {
+		return dailyRate.multiply(new BigDecimal(taskDays()));
+	}
+	public BigDecimal costMonth() {
+		return dailyRate.multiply(new BigDecimal(taskMonthDays()));
+	}
+	@SuppressWarnings("unchecked")
+	public JSONObject toJSON() {
+		JSONObject programmerJSON = new JSONObject();
+		programmerJSON.put("programmerID", programmerID);
+		programmerJSON.put("firstName", firstName);
+		programmerJSON.put("lastName", lastName);
+		programmerJSON.put("task", task);
+		if (taskStartDate != null) {
+			programmerJSON.put("taskStartDate", taskStartDate.toString());
+		} else {
+			programmerJSON.put("taskStartDate", null);
+		}
+		if (taskEndDate != null) {
+			programmerJSON.put("taskEndDate", taskEndDate.toString());
+		} else {
+			programmerJSON.put("taskEndDate", null);
+		}
+		if (dailyRate != null) {
+			programmerJSON.put("dailyRate", dailyRate.toString());
+		} else {
+			programmerJSON.put("dailyRate", null);
+		}
+		
+		JSONObject programmerJSONObject = new JSONObject();
+		programmerJSONObject.put("programmerInCharge", programmerJSON);
+		
+		return programmerJSONObject;
+	}
+	public void removeProgrammer() {
+		if (programmerList.contains(this)) {
+			programmerList.remove(this);
+		} {
+			System.out.println("'ID: " + this.programmerID + "  Name: " + this.lastName + ", " + this.firstName + "' is not located in programmerList ArrayList.");
+		}
+	}
+}
