@@ -4,25 +4,21 @@ Each programmer can have a project and be assigned to a team. The executable add
 Use the executable file to run the jar and generate the report.
 
 ## Prerequisites
-* Internet Explorer or Chrome or Firefox
-* Server (Used Sublime Text 3)
+* Java Runtime
 
 ## Installing
 None
 
 ## Running
-1. Using (Sublime Text 3) run SublimeServer.
-2. Using (Sublime Text 3) open index.html in your web browser using "View in SublimeServer"
+1. Run the -jar executable in javaSE_EmployeeTeams_Executable
+
+Note: You may need to modify .json files which hold initial data to get a relevent response. The executable results change dependent on DateTime.
 
 ## Deployment
 No deployment necessary
 
 ## Built With
-* HTML5
-* CSS3
-* JavaScript
-* JQuery
-* JSON
+* [To Be Updated]
 
 ## Contributing
 N/A
